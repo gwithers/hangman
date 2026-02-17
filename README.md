@@ -11,11 +11,13 @@ nvm install node
 nvm use node
 ```
 
-2. Install dependencies and run the dev server:
+2. Enable Corepack (recommended) then install dependencies and run the dev server with Yarn:
 
 ```bash
-npm install
-npm run dev
+corepack enable
+corepack prepare yarn@stable --activate
+yarn install
+yarn dev
 ```
 
 3. Open the URL printed by Vite (usually http://localhost:5173).

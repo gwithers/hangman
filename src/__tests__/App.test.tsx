@@ -13,10 +13,9 @@ describe('Hangman App', () => {
 
   test('renders blanks for the chosen word', () => {
     render(<App />)
-    // Math.random mocked to 0 -> first word in mock list is 'apple'
     const letters = document.querySelectorAll('.letter')
     expect(letters.length).toBe(5)
-    letters.forEach(l => expect(l.textContent.trim()).toBe('_'))
+    letters.forEach(l => expect(l.textContent!.trim()).toBe('_'))
   })
 
   test('reveals a correct letter when guessed', async () => {
@@ -24,7 +23,7 @@ describe('Hangman App', () => {
     const user = userEvent.setup()
     const aBtn = screen.getByRole('button', { name: /Guess A/i })
     await user.click(aBtn)
-    const wordContainer = document.querySelector('.word')
+    const wordContainer = document.querySelector('.word')!
     const { getByText } = within(wordContainer)
     expect(getByText('A')).toBeInTheDocument()
   })
@@ -40,7 +39,6 @@ describe('Hangman App', () => {
   test('player can win by guessing all letters', async () => {
     render(<App />)
     const user = userEvent.setup()
-    // word 'apple' -> unique letters A,P,L,E
     for (const ch of ['A', 'P', 'L', 'E']) {
       await user.click(screen.getByRole('button', { name: new RegExp(`Guess ${ch}`, 'i') }))
     }
@@ -56,5 +54,23 @@ describe('Hangman App', () => {
     }
     expect(screen.getByText(/You lose/i)).toBeInTheDocument()
     expect(screen.getByText(/the word was/i)).toBeInTheDocument()
+  })
+
+  test('accepts keyboard input (physical keyboard)', async () => {
+    render(<App />)
+    const user = userEvent.setup()
+    await user.keyboard('a')
+    const wordContainer = document.querySelector('.word')!
+    const { getByText } = within(wordContainer)
+    expect(getByText('A')).toBeInTheDocument()
+  })
+
+  test('updates guessed list and progress text', async () => {
+    render(<App />)
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: /Guess Z/i }))
+    const guessedList = document.querySelector('.guessed-list')!
+    expect(within(guessedList).getByText(/Z/)).toBeInTheDocument()
+    expect(screen.getByText(/attempts left/i)).toBeInTheDocument()
   })
 })

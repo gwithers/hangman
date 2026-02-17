@@ -1,4 +1,4 @@
-module.exports = `apple
+const data = `apple
 banana
 javascript
 react
@@ -23,3 +23,5 @@ integration
 testing
 performance
 `
+
+export default data
