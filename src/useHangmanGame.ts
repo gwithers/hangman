@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import wordsRaw from './words.txt?raw'
 import type { Backdrop } from './HangmanDrawing'
 
@@ -7,6 +7,14 @@ export const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 /** Maximum number of wrong guesses before the game is lost. */
 export const MAX_WRONG = 6
+
+/** Word length ranges for each difficulty tier. */
+export type Difficulty = 'easy' | 'moderate' | 'hard'
+const DIFFICULTY_RANGE: Record<Difficulty, [number, number]> = {
+  easy:     [3, 5],
+  moderate: [6, 8],
+  hard:     [9, Infinity],
+}
 
 const BACKDROPS: Backdrop[] = ['mountain', 'ocean', 'plain']
 
@@ -24,14 +32,31 @@ function pickRandomWord(words: string[]): string {
  * state, and keyboard input. Returns everything the UI needs to render the game
  * and respond to player actions.
  */
-export function useHangmanGame() {
-  /** Full word list parsed once from words.txt. */
-  const words = useMemo(() => wordsRaw.split(/\r?\n/), [])
+export function useHangmanGame(difficulty: Difficulty) {
+  const allWords = useMemo(
+    () => wordsRaw.split(/\r?\n/).map(w => w.trim()).filter(Boolean),
+    []
+  )
+
+  /** Word pool filtered by the current difficulty tier. */
+  const words = useMemo(() => {
+    const [min, max] = DIFFICULTY_RANGE[difficulty]
+    return allWords.filter(w => w.length >= min && w.length <= max)
+  }, [allWords, difficulty])
 
   const [word, setWord] = useState<string>(() => pickRandomWord(words))
   const [backdrop, setBackdrop] = useState<Backdrop>(() => BACKDROPS[Math.floor(Math.random() * BACKDROPS.length)])
   /** Set of all letters the player has guessed so far (uppercase). */
   const [guessed, setGuessed] = useState<Set<string>>(() => new Set())
+
+  // When difficulty changes, start a fresh game with a word from the new pool.
+  // Skip the initial mount — useState already set the first word.
+  const mounted = useRef(false)
+  useEffect(() => {
+    if (!mounted.current) { mounted.current = true; return }
+    setWord(pickRandomWord(words))
+    setBackdrop(BACKDROPS[Math.floor(Math.random() * BACKDROPS.length)])
+  }, [difficulty]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Clear guesses whenever a new word is chosen.
   useEffect(() => {
