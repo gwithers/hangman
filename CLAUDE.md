@@ -28,20 +28,23 @@ yarn install
 This is a React + TypeScript + Vite hangman game. All game logic lives in a single custom hook; `App.tsx` is purely presentational.
 
 **`src/useHangmanGame.ts`** — all game state and logic:
+- Accepts a `difficulty: Difficulty` parameter (`'easy' | 'moderate' | 'hard'`); filters the word list by length ranges (easy: 3–5, moderate: 6–8, hard: 9+)
 - Loads `src/words.txt` at build time via Vite's `?raw` import
-- Picks a random word and backdrop (`mountain | ocean | plain`) on each game
+- Picks a random word and backdrop (`mountain | ocean | plain`) on each game; re-picks when difficulty changes
 - Tracks guessed letters as a `Set<string>` (always uppercase)
 - Derives `wrongGuesses`, `isWin`, and `gameOver` from that set
 - Listens for physical keyboard events (`keydown` on `window`)
-- Exports `ALPHABET` and `MAX_WRONG = 6` for use in `App.tsx`
+- Exports `ALPHABET`, `MAX_WRONG = 6`, and `Difficulty` type for use in `App.tsx`
 
 **`src/HangmanDrawing.tsx`** — pure SVG component:
 - Accepts `step` (0–6) and `backdrop` props; no internal state
 - Reveals body parts incrementally; each animates in via CSS on first render
 
-**`src/App.tsx`** — UI only:
+**`src/App.tsx`** — UI only; two-column layout (left: drawing + result + definition; right: word + keyboard + meta):
+- Difficulty picker (Easy / Moderate / Hard buttons) at the top; passes selection into `useHangmanGame`
 - Wires `useHangmanGame` to the keyboard, word display, progress bar, and win/lose messages
 - Adds a shake animation when `wrongGuesses` increments (tracked via `useRef`)
+- On game over, fetches a definition from `https://api.dictionaryapi.dev/api/v2/entries/en/<word>` and displays up to 2 meanings × 2 definitions; silently hides the panel if the API returns nothing
 
 **`src/words.txt`** — newline-separated word list; edit directly to add/remove words.
 
@@ -50,3 +53,5 @@ This is a React + TypeScript + Vite hangman game. All game logic lives in a sing
 Tests use Jest + jsdom + Testing Library. `Math.random` is mocked to `0` in `beforeEach` so the first word in the list (`APPLE`) is always selected — tests rely on this.
 
 The `src/__mocks__/raw.ts` file provides the mock word list for tests (Vite's `?raw` imports are mapped via `moduleNameMapper` in `jest.config.cjs`).
+
+`src/__tests__/App.test.tsx` — currently empty; `src/__tests__/HangmanDrawing.test.tsx` covers the SVG output at each step.
