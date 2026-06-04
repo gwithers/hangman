@@ -3,4 +3,9 @@ dist
 .env
 *.log
 coverage
-.yarn/install-state.gz
+.yarn
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/patches
+!.yarn/versions
