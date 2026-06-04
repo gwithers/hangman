@@ -1,4 +1,5 @@
 import js from "@eslint/js";
+import globals from "globals";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
@@ -16,14 +17,9 @@ export default [
         ecmaFeatures: { jsx: true }
       },
       globals: {
-        browser: true,
-        es2021: true,
-        jest: true,
-        JSX: true,
-        window: true,
-        document: true,
-        KeyboardEvent: true,
-        HTMLElement: true
+        ...globals.browser,
+        ...globals.es2021,
+        JSX: true
       }
     },
     plugins: {
@@ -43,14 +39,7 @@ export default [
     files: ["src/**/__tests__/*.{ts,tsx}"],
     languageOptions: {
       globals: {
-        describe: true,
-        test: true,
-        it: true,
-        expect: true,
-        beforeEach: true,
-        afterEach: true,
-        beforeAll: true,
-        afterAll: true
+        ...globals.jest
       }
     }
   }
